@@ -1,0 +1,663 @@
+:root {
+  /* True-black flat, brand colours mapped: ground #000, cards #111,
+     nested #2a2a2a. Crimson is the data hue, never chrome. */
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: #111111;
+  --raised: #2a2a2a;
+  --text: #ffffff;
+  --muted: #b4b4b4;
+  --faint: #949494;
+  --line: #2a2a2a;
+  --control: #444444;
+  --ok: #3fc07a;
+  --warn: #c47d12;
+  --bad: #e5566f;
+  --accent: #c41e3a;
+  --accent-ink: #ffffff;
+  --paper: #ffffff;
+  --paper-ink: #111111;
+  --ink: #111111;
+  --sand: #c41e3a;
+  --clay: #2b5a8a;
+  --umber: #2a2a2a;
+  --olive: #111111;
+  --steel: #2b5a8a;
+  --radius-card: 20px;
+  --radius-control: 999px;
+  --ease-in: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.3, 0, 1, 1);
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-press: 140ms;
+  --t-sheet: 320ms;
+  --t-leave: 220ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  /* 17px is the iOS body default; 13px is macOS. Size by space + pointer, not device. */
+  font: 17px/1.45 ui-sans-serif, system-ui, -apple-system, 'SF Pro Text', sans-serif;
+}
+
+@media (min-width: 768px) and (pointer: fine) {
+  html,
+  body {
+    font-size: 13px;
+  }
+}
+
+#stage {
+  display: block;
+  width: 100vw;
+  height: 100dvh;
+  touch-action: none; /* Let the game own touch; don't scroll or pinch-zoom. */
+}
+
+#lobby {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  left: auto;
+  z-index: 6;
+  padding: 0;
+  background: none;
+  border: none;
+  max-width: none;
+  pointer-events: auto;
+}
+
+.lobby-gear {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform var(--t-press) var(--ease-in), background var(--t-press) var(--ease-move);
+}
+
+.lobby-gear:hover {
+  background: var(--raised);
+}
+
+.lobby-gear:active {
+  transform: scale(0.97);
+}
+
+.lobby-gear-icon {
+  width: 22px;
+  height: 22px;
+  transition: transform var(--t-sheet) var(--ease-in);
+}
+
+#lobby.is-open .lobby-gear-icon {
+  transform: rotate(60deg);
+}
+
+.lobby-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  outline: 2px solid var(--bg);
+}
+
+.lobby-dot[data-state='connecting'] {
+  background: var(--warn);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.lobby-dot[data-state='connected'] {
+  background: var(--ok);
+}
+
+.lobby-dot[data-state='failed'] {
+  background: var(--bad);
+}
+
+.lobby-sheet {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: min(320px, calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  max-height: min(70dvh, calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)));
+  overflow: auto;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--panel);
+  border: 0;
+  transform-origin: top right;
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  pointer-events: none;
+  transition: opacity var(--t-leave) var(--ease-out), transform var(--t-leave) var(--ease-out);
+}
+
+#lobby.is-open .lobby-sheet {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition: opacity var(--t-sheet) var(--ease-in), transform var(--t-sheet) var(--ease-in);
+}
+
+
+.lobby-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  overflow: auto;
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: var(--bg);
+}
+
+.lobby-gate[hidden] {
+  display: none;
+}
+
+.lobby-gate-card {
+  width: min(360px, 100%);
+  padding: 28px 22px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--panel);
+}
+
+.lobby-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  margin-bottom: 18px;
+}
+
+.lobby-mark i {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.lobby-mark .m-sand { background: var(--sand); border-radius: 50%; }
+.lobby-mark .m-clay { background: var(--clay); border-radius: 6px; }
+.lobby-mark .m-umber {
+  width: 0;
+  height: 0;
+  background: none;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-bottom: 26px solid var(--umber);
+}
+.lobby-mark .m-olive { background: var(--olive); border-radius: 50%; }
+.lobby-mark .m-ink { background: var(--ink); border-radius: 4px; }
+
+.lobby-gate-brand {
+  margin: 0;
+  font: 700 32px/1 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.04em;
+  color: var(--text);
+}
+
+.lobby-gate-lead {
+  margin: 10px 0 16px;
+  color: var(--muted);
+}
+
+.lobby-gate-name {
+  width: 100%;
+  margin: 0 0 16px;
+}
+
+.lobby-gate-name .lobby-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.lobby-name-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--raised);
+  color: var(--text);
+  font: inherit;
+}
+
+.lobby-field .lobby-name-input {
+  display: block;
+  margin-top: 6px;
+}
+
+.lobby-gate-create,
+.lobby-gate-join button,
+.lobby-share button {
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.lobby-gate-create {
+  width: 100%;
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.lobby-gate-create,
+.lobby-share button,
+.lobby-gate-join button,
+.lobby-leave,
+.lobby-chip {
+  transition: transform var(--t-press) var(--ease-in), background var(--t-press) var(--ease-move), color var(--t-press) var(--ease-move), border-color var(--t-press) var(--ease-move);
+}
+
+.lobby-gate-create:active,
+.lobby-share button:active,
+.lobby-gate-join button:active,
+.lobby-leave:active,
+.lobby-chip:active {
+  transform: scale(0.97);
+}
+
+.lobby-gate-join {
+  margin-top: 18px;
+}
+
+.lobby-gate-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lobby-room-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--raised);
+  color: var(--text);
+  font: 600 16px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; /* taste-skill-ignore — room ID */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lobby-gate-join button {
+  width: 100%;
+  background: var(--raised);
+  color: var(--text);
+}
+
+.lobby-room {
+  margin: 12px 0 8px;
+}
+
+.lobby-room-code {
+  font: 800 28px/1.1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  color: var(--text);
+}
+
+.lobby-qr {
+  display: block;
+  width: 148px;
+  height: 148px;
+  margin: 10px 0 12px;
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.lobby-status::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  vertical-align: middle;
+}
+.lobby-status[data-state='connecting']::before {
+  background: var(--warn);
+  animation: pulse 1s ease-in-out infinite;
+}
+.lobby-status[data-state='connected']::before {
+  background: var(--ok);
+}
+.lobby-status[data-state='failed']::before {
+  background: var(--bad);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.lobby-hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lobby-status[data-state='connecting']::before,
+  .lobby-dot[data-state='connecting'] {
+    animation: none;
+  }
+
+  .lobby-gate-card,
+  .lobby-mark i,
+  .lobby-gear,
+  .lobby-gear-icon,
+  .lobby-sheet,
+  .lobby-chip,
+  .lobby-leave,
+  .lobby-gate-create,
+  .lobby-share button,
+  .lobby-gate-join button {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .lobby-gear:active,
+  .lobby-share button:active,
+  .lobby-gate-create:active,
+  .lobby-gate-join button:active,
+  .lobby-leave:active,
+  .lobby-chip:active {
+    transform: none;
+  }
+
+  #touch-stick {
+    transition: none;
+  }
+}
+
+.lobby-field {
+  margin-top: 14px;
+}
+
+.lobby-langs,
+.lobby-timer {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.lobby-timer {
+  align-items: center;
+}
+
+.lobby-timer-value {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+}
+
+.lobby-chip {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--raised);
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lobby-chip.is-on,
+.lobby-chip[data-timer] {
+  background: var(--raised);
+}
+
+.lobby-chip.is-on {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.lobby-chip:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.lobby-chip[data-timer] {
+  flex: 0 0 44px;
+}
+
+.lobby-leave {
+  width: 100%;
+  margin-top: 16px;
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--bad);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--bad);
+  cursor: pointer;
+}
+
+.lobby-leave:active {
+  transform: scale(0.96);
+}
+
+.lobby-share {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.lobby-share code {
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--raised);
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  user-select: all;
+  word-break: break-all;
+}
+
+.lobby-share button {
+  width: 100%;
+  background: var(--raised);
+  color: var(--text);
+  border: 0;
+}
+.lobby-share button:hover {
+  background: #333333;
+}
+
+.lobby-label,
+.lobby-peers {
+  color: var(--muted);
+}
+
+.lobby-peers {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.lobby-ping {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.lobby-ping[data-level='good'] {
+  color: var(--ok);
+}
+
+.lobby-ping[data-level='ok'] {
+  color: var(--warn);
+}
+
+.lobby-ping[data-level='bad'] {
+  color: var(--bad);
+}
+
+.lobby-error {
+  margin-top: 8px;
+  padding: 8px 0 0;
+  color: var(--bad);
+}
+.lobby-error span {
+  color: var(--muted);
+}
+
+/* HUD overlay, created on demand by the 3D renderer (render-3d/surface.js).
+   Text is drawn in the DOM rather than WebGL: sharper, cheaper, and it scales
+   with the device's own font settings. */
+#hud3d {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font: 600 17px/1.4 ui-sans-serif, system-ui, -apple-system, 'SF Pro Text', sans-serif;
+  color: #10161d;
+  text-shadow: 0 1px 0 #ffffff80;
+}
+
+@media (min-width: 768px) and (pointer: fine) {
+  #hud3d {
+    font-size: 15px;
+  }
+}
+
+#hud3d > div {
+  position: absolute;
+  white-space: pre-line;
+}
+
+.hud3d-topLeft {
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+}
+
+.hud3d-topRight {
+  top: max(14px, env(safe-area-inset-top));
+  right: max(66px, calc(env(safe-area-inset-right) + 52px));
+  text-align: right;
+}
+
+.hud3d-center {
+  top: 42%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+}
+
+.hud3d-bottom {
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-weight: 500;
+  color: #3c4650;
+}
+
+/* Left-thumb pad: invisible until a finger lands, then the stick appears
+   under that thumb (game-controls.md › Touch controls). */
+#touch-pad {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: min(46vw, 280px);
+  height: min(52dvh, 360px);
+  z-index: 3;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#touch-stick {
+  position: fixed;
+  width: 128px;
+  height: 128px;
+  margin-left: -64px;
+  margin-top: -64px;
+  z-index: 4;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+#touch-stick.is-active {
+  opacity: 1;
+}
+
+#touch-stick .touch-stick-base {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #1c191524;
+  border: 2px solid #1c191555;
+  box-shadow: inset 0 0 0 1px #ffffff40;
+}
+
+#touch-stick .touch-stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #1c1915b8;
+  border: 2px solid #1c1915e6;
+  transform: translate(calc(-50% + var(--kx, 0px)), calc(-50% + var(--ky, 0px)));
+  pointer-events: none;
+}
+
+#touch-stick.is-active .touch-stick-knob {
+  box-shadow: 0 0 0 10px #1c191526;
+}
+
+body:has(#hud3d) #touch-stick .touch-stick-base {
+  background: #10161d24;
+  border-color: #10161d55;
+  box-shadow: inset 0 0 0 1px #ffffff40;
+}
+
+body:has(#hud3d) #touch-stick .touch-stick-knob {
+  background: #10161db8;
+  border-color: #10161de6;
+}

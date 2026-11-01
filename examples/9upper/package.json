@@ -1,0 +1,11 @@
+{
+  "name": "9upper",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
+}

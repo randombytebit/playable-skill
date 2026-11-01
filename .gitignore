@@ -1,0 +1,27 @@
+# Third-party agent skills stay on this machine — not in the playable repo.
+.agents/
+**/.agents/
+
+# Dependencies and generated browser copies (postinstall rebuilds vendor/).
+node_modules/
+vendor/
+
+# Local skills CLI lockfiles — not part of the product.
+skills-lock.json
+**/skills-lock.json
+
+# Taste working files belong in ~/.taste-skill — never in this repo.
+.taste-skill/
+
+# Local Cursor rules (taste lives in ~/.cursor, not this repo).
+.cursor/
+
+# Editor / OS
+.claude/
+.DS_Store
+*.log
+npm-debug.log*
+.env
+.env.*
+.scratch/
+tmp/

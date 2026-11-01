@@ -1,0 +1,13 @@
+{
+  "name": "hop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "postinstall": "node vendor-deps.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.22.0",
+    "three": "^0.186.1"
+  }
+}

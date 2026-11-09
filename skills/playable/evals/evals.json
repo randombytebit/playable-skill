@@ -4,46 +4,51 @@
     {
       "id": 1,
       "prompt": "I want a game like Crossy Road where we hop across a busy road on our phones. We'll all be at my house on the same Wi-Fi. First one across wins.",
-      "expected_output": "The first grill round asks in one message whether anyone will play on a phone and how they should move, offering swipe (one hop or step) versus a little stick (keep moving), together with the other game questions. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. After that confirm, the project is scaffolded with --render=3d and --transport=local. Then Research, Look, and Flow briefs run in parallel (or as four separate passes if the host cannot launch subagents), and a Programming pass writes only game.js. game.js sets input.touch to 'swipe', keeps keyboard working, and does not raise TICK_HZ or edit core/ for smoothness or mobile input.",
+      "expected_output": "The first grill round asks in one message whether anyone will play on a phone and how they should move, offering swipe (one hop or step) versus a little stick (keep moving), together with the other game questions. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. They named Crossy Road, so one Research brief may say what to borrow and what not to copy. After confirm, the project is scaffolded with --shape=hop, which sets --render=3d, and --transport=local. The main model then edits that hop game.js. It does not launch Look and Flow, and it does not invent a new architecture. game.js sets input.touch to 'swipe', keeps lane and rowAt, keeps keyboard working, and does not raise TICK_HZ or edit core/.",
       "files": [],
       "expectations": [
         "The first grill round asks whether anyone will play on a phone, or only on computers, in the same message as the other game questions",
         "The first grill round offers swipe (one hop or step at a time) versus a little stick (keep moving), without saying virtual joystick or pointer events",
         "The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay",
+        "The scaffold uses --shape=hop",
         "The scaffold uses --render=3d",
         "The scaffold uses --transport=local",
         "game.js sets input.touch to 'swipe'",
+        "game.js keeps lane and rowAt because the shape is hop",
         "The skill does not raise TICK_HZ or edit core/ to make motion smoother",
         "After scaffolding, only game.js is edited — not core/, net.js, or renderer/",
-        "After scaffolding, game.js is written by a Programming pass after parallel Research/Look/Flow briefs — or by the main model doing those four jobs as separate passes if it cannot launch subagents"
+        "They named Crossy Road, so at most one Research brief runs. Look and Flow are not launched. The main model edits the hop shape rather than inventing a new file"
       ]
     },
     {
       "id": 2,
       "prompt": "Can you make a tag game we can play on our phones at the park? You're it, you chase the others, whoever gets tagged is it. I want it to look flat, like looking down on a playground.",
-      "expected_output": "The first grill round still asks about phones and how they should move, with swipe versus a little stick as concrete choices. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. Because they asked for a flat playground look, the scaffold then uses --render=2d. Chase / tag on phones becomes input.touch: 'stick'. Keyboard still works. The skill does not patch core/ for mobile controls.",
+      "expected_output": "The first grill round still asks about phones and how they should move, with swipe versus a little stick as concrete choices. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. A flat playground chase is still the tag shape: the scaffold uses --shape=tag and --render=3d, not --render=2d. Chase / tag on phones becomes input.touch: 'stick'. Keyboard still works. The skill does not patch core/ for mobile controls and does not turn the game into a hop lane grid.",
       "files": [],
       "expectations": [
         "The first grill round asks about phones and offers swipe versus a little stick in the same message as the other questions",
         "The four-or-five-sentence replay mentions that phones move with a little stick",
         "The skill does not scaffold or write game.js until they confirm that replay",
-        "The scaffold uses --render=2d because they asked for a flat, top-down look",
+        "The scaffold uses --shape=tag",
+        "The scaffold uses --render=3d. Flat, top-down, and playground do not select --render=2d",
         "game.js sets input.touch to 'stick'",
+        "game.js does not use a hop lane grid (no rowAt, no lane rows)",
         "The skill does not edit core/ to add mobile controls"
       ]
     },
     {
       "id": 3,
       "prompt": "Make us a little racing game for laptops only — nobody is using a phone. We'll be in the living room together.",
-      "expected_output": "The first grill round still asks whether anyone will play on a phone or only on computers, with the swipe / little-stick choices sitting there in case they change their mind. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. After that replay confirms computers only, game.js omits input.touch (or does not set it) and relies on the keyboard. Same-room play uses --transport=local. A racing / depth game uses --render=3d unless they clearly asked for flat.",
+      "expected_output": "The first grill round still asks whether anyone will play on a phone or only on computers, with the swipe / little-stick choices sitting there in case they change their mind. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. After that replay confirms computers only, the game is still --shape=race, which keeps touch: 'stick' so the shape check passes, and keyboard still works. Same-room play uses --transport=local. A race uses --render=3d. It is not a hop lane grid.",
       "files": [],
       "expectations": [
         "The first grill round still asks whether anyone will play on a phone, or only on computers",
         "The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay",
-        "After computers-only is confirmed in the replay, game.js omits input.touch or does not set it to swipe or stick",
+        "After computers-only is confirmed, the scaffold still uses --shape=race and game.js keeps touch: 'stick'",
         "Keyboard controls are used (arrows / WASD)",
         "The scaffold uses --transport=local",
-        "The scaffold uses --render=3d unless they clearly asked for a flat board"
+        "The scaffold uses --render=3d",
+        "game.js has lap and does not use a hop lane grid"
       ]
     },
     {
@@ -92,13 +97,15 @@
     {
       "id": 7,
       "prompt": "I want a chase game my friends can join from their houses over Discord. Some of them will play on their phones.",
-      "expected_output": "The first grill round still asks about phones and how they should move, even though they already said some people are on phones — it offers swipe versus a little stick so they can pick. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. Friends elsewhere / Discord then uses --transport=tab. Chase defaults to input.touch: 'stick' if they do not pick a style. Renderer follows what they describe; 3D if they say nothing visual.",
+      "expected_output": "The first grill round still asks about phones and how they should move, even though they already said some people are on phones — it offers swipe versus a little stick so they can pick. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. Friends elsewhere / Discord then uses --transport=tab. A chase is --shape=tag and --render=3d, with input.touch: 'stick'. It is not a hop lane grid.",
       "files": [],
       "expectations": [
         "The first grill round asks how phones should move and offers swipe versus a little stick",
         "The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay",
         "The scaffold uses --transport=tab",
+        "The scaffold uses --shape=tag and --render=3d",
         "game.js sets input.touch to 'stick' for a chase game",
+        "game.js does not use a hop lane grid",
         "The four-or-five-sentence replay mentions that phones move with a little stick",
         "The skill does not edit core/ for mobile controls"
       ]
@@ -106,31 +113,33 @@
     {
       "id": 8,
       "prompt": "Something like hop — we jump across lanes of traffic. My kids will play on phones next to me.",
-      "expected_output": "The skill reads examples/hop before guessing the feel. The first grill round still asks about phones and offers swipe versus a little stick. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. Same-room / next-to-me play then uses --transport=local and --render=3d. After the scaffold, Research, Look, and Flow briefs run in parallel (or as separate passes if the host cannot launch subagents), and a Programming pass writes only game.js. Hop / one-step-at-a-time on phones becomes input.touch: 'swipe'. The skill does not copy hop's game.js under templates/.",
+      "expected_output": "The skill reads shapes/hop.js (and may read examples/hop, because the shape is hop) before guessing the feel. The first grill round still asks about phones and offers swipe versus a little stick. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. Same-room / next-to-me play then uses --transport=local, --shape=hop, and --render=3d. The main model edits that game.js. It does not launch Research, Look, and Flow. Hop on phones becomes input.touch: 'swipe'. The skill does not copy hop's game.js under templates/.",
       "files": [],
       "expectations": [
-        "The skill reads examples/hop (or its game.js) before writing the new game",
+        "The skill reads shapes/hop.js or examples/hop before writing the new game",
         "The first grill round asks about phones and offers swipe versus a little stick",
         "The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay",
+        "The scaffold uses --shape=hop",
         "The scaffold uses --render=3d",
         "The scaffold uses --transport=local",
         "game.js sets input.touch to 'swipe'",
         "After scaffolding, only game.js is edited",
-        "After scaffolding, game.js is written by a Programming pass after parallel Research/Look/Flow briefs — or by the main model doing those four jobs as separate passes if it cannot launch subagents"
+        "The main model edits the hop shape. Research, Look, and Flow are not launched for this prompt"
       ]
     },
     {
       "id": 9,
       "prompt": "Make a party game like those card games where one person has the real answer and the others have to fake it. We tap on people to guess. Phones around a table, same Wi-Fi.",
-      "expected_output": "The first grill round still asks about phones. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. After that, Look, Flow, and Research may run in parallel. Because this is taps on people, not moving around, game.js sets pointer: true and omits input.touch — no swipe or stick. Same-table play uses --transport=local and --render=2d. Cards and role names are original; a published product is a shape to follow, not a deck to copy. The skill says plainly that the answer is in the snapshot, so draw() can hide it but DevTools can still read it. After the scaffold, only game.js is written — by a Programming pass after those briefs, or by the main model doing the four jobs as separate passes.",
+      "expected_output": "The first grill round still asks about phones. The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay. Because this is taps on people, not moving around, the scaffold uses --shape=party, --render=2d, and --transport=local. game.js sets pointer: true, imports paper.js, and does not set input.touch to swipe or stick. The main model fills that file. It does not launch Look, Flow, and Research in parallel, and it does not clone examples/9upper. Cards and role names are original. The skill says plainly that the answer is in the snapshot, so draw() can hide it but DevTools can still read it. After the scaffold, only game.js is edited.",
       "files": [],
       "expectations": [
         "The first grill round asks whether anyone will play on a phone",
         "The skill does not scaffold or write game.js until they confirm a four-or-five-sentence replay",
-        "After scaffolding, Look, Flow, and Research may run in parallel, then a Programming pass writes only game.js — or the main model does those four jobs as separate passes",
+        "The main model fills the party shape. Look, Flow, and Research are not launched in parallel",
+        "The scaffold uses --shape=party",
         "The scaffold uses --render=2d",
         "The scaffold uses --transport=local",
-        "game.js sets input.pointer to true and does not set input.touch to swipe or stick",
+        "game.js sets input.pointer to true, imports paper.js, and does not set input.touch to swipe or stick",
         "Cards and names are original, not copied from a published product",
         "The skill does not claim the answer is secret on the wire",
         "After scaffolding, only game.js is edited"
@@ -139,15 +148,89 @@
     {
       "id": 10,
       "prompt": "Ok that's the game, go build it. Use helpers / subagents if you can.",
-      "expected_output": "The main model already has a confirmed four-or-five-sentence replay, or it grills first if it does not. Then it scaffolds. Then it launches Research, Look, and Flow in one parallel turn. Then a Programming subagent writes only game.js. No plumbing is edited (not core/, net.js, renderer/, server.mjs, or templates/). Handover is the addresses they and their friends open, not a stack trace. If the host cannot launch subagents, the main model still does those four jobs as separate passes and does not skip straight from scaffold to a single unbriefed game.js dump.",
+      "expected_output": "The main model already has a confirmed four-or-five-sentence replay, or it grills first if it does not. This prompt does not name an outside game, so it does not launch Research, Look, or Flow. Once the replay is confirmed, the main model scaffolds with --shape and edits that game.js itself. No plumbing is edited (not core/, net.js, renderer/, server.mjs, or templates/). check-game.mjs must exit 0 before handover. Handover is the addresses they and their friends open, not a stack trace.",
       "files": [],
       "expectations": [
         "If the replay is not already confirmed, the skill grills first and does not scaffold yet",
-        "Once the replay is confirmed, the main model scaffolds, then launches Research, Look, and Flow in one parallel turn",
-        "A Programming pass then writes only game.js — or the main model does Research, Look, Flow, and Programming as four separate passes if it cannot launch subagents",
-        "The skill does not skip straight from scaffold to a single unbriefed game.js dump when the host can use subagents",
+        "Once the replay is confirmed, the main model scaffolds with --shape and edits that game.js itself",
+        "The skill does not launch Research, Look, and Flow for this prompt",
+        "The skill does not invent a game.js that is not one of the six shapes",
         "No plumbing is edited — not core/, net.js, renderer/, server.mjs, or templates/",
+        "check-game.mjs exits 0 before the skill hands over an address",
         "Handover is the addresses they and their friends open, not a stack trace"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Don't ask me anything. Just build a tag game right now.",
+      "expected_output": "The skill still grills. It does not scaffold, write game.js, or launch a subagent until they confirm a four-or-five-sentence replay. The first round has recommended answers, including phones and swipe versus a little stick, and it recommends tag in plain language.",
+      "files": [],
+      "expectations": [
+        "The skill does not scaffold or write game.js in this turn",
+        "The skill does not launch Research, Look, Flow, or a programming subagent",
+        "The first message is a grill round with recommended answers, not a build",
+        "The recommended game is a chase / tag, not a hop lane grid",
+        "The first round asks about phones and offers swipe versus a little stick"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Yes that's the game — a race around a short track, first to three laps wins. We already agreed. Build it. Same room.",
+      "expected_output": "The replay is already confirmed, so the skill scaffolds --shape=race --transport=local, which sets --render=3d. game.js keeps lap and touch: 'stick'. It does not contain a hop lane grid (no rowAt, no lane rows). Only game.js is edited. check-game.mjs exits 0 before handover. Research, Look, and Flow are not launched.",
+      "files": [],
+      "expectations": [
+        "The scaffold uses --shape=race",
+        "The scaffold uses --render=3d",
+        "The scaffold uses --transport=local",
+        "game.js contains lap",
+        "game.js does not use a hop lane grid (no rowAt, no lane rows, no carX)",
+        "The skill does not launch Research, Look, and Flow",
+        "Only game.js is edited",
+        "check-game.mjs exits 0 before handover"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Yes — a two-player board, we take turns tapping squares. That's the game, build it. We're at the same table.",
+      "expected_output": "The replay is already confirmed. The skill scaffolds --shape=board --transport=local, which sets --render=2d. game.js sets pointer: true, imports paper.js, and keeps turn. It does not set touch to swipe or stick. Only game.js is edited. check-game.mjs exits 0 before handover.",
+      "files": [],
+      "expectations": [
+        "The scaffold uses --shape=board",
+        "The scaffold uses --render=2d",
+        "The scaffold uses --transport=local",
+        "game.js sets pointer: true",
+        "game.js imports paper.js",
+        "game.js keeps a turn",
+        "game.js does not set input.touch to swipe or stick",
+        "Only game.js is edited",
+        "check-game.mjs exits 0 before handover"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Make a first-person shooter, mouse-look, instant headshots, like a real FPS.",
+      "expected_output": "The first message is the reshape, not a scaffold. It says you face the way you move and one button fires a slow shot, there is no mouse-look and no instant hit. It does not edit core/, does not promise hitscan, and does not write game.js until they accept that sentence.",
+      "files": [],
+      "expectations": [
+        "The first message reshapes the game to facing the way you move and a slow shot",
+        "The first message says there is no mouse-look and no instant hit",
+        "The skill does not scaffold or write game.js until they accept the reshape",
+        "The skill does not edit core/ to add mouse-look",
+        "The skill does not promise hitscan or an instant headshot"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Make a card game where the other players cannot see my hand, even if they try.",
+      "expected_output": "The first message says everyone receives the whole game, a face-down card does not stop someone from looking closely, and they can play with people they trust or play it in the open. The skill does not promise a secret on the wire, does not edit core/ to filter snapshots, and does not scaffold until they accept that.",
+      "files": [],
+      "expectations": [
+        "The first message says everyone receives the whole game",
+        "The first message says a face-down card does not stop someone from looking closely",
+        "The skill offers trust-table play or playing in the open",
+        "The skill does not promise that the hand is secret on the wire",
+        "The skill does not edit core/ to hide state from other players",
+        "The skill does not scaffold or write game.js until they accept the reshape"
       ]
     }
   ]

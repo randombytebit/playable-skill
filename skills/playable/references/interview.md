@@ -1,27 +1,32 @@
 # Interview the game before you build it
 
-Do not scaffold a project and do not write `game.js` until they confirm a
-four-or-five-sentence replay of the game. You — the main model — talk to the
-user. Subagents never interview.
+Do not scaffold, do not write `game.js`, and do not launch a subagent
+until they confirm the five-sentence replay below. You — the main model —
+talk to the user. Subagents never interview.
+
+Read `references/shapes.md` first and classify the request into `tag`,
+`race`, `shot`, `hop`, `party`, or `board`. The shape picks the look.
+Do not ask them to choose flat versus 3D. "Flat", "top-down", and
+"playground" are still the 3D kit unless the shape is `party` or `board`.
 
 ## How a round works
 
 Treat the game as a **design tree**: every settled choice unlocks the
 questions that hang off it. The **frontier** is only those questions whose
-prerequisites are already answered. Ask nothing that still depends on a
-guess.
+prerequisites are already answered.
 
 - One message per round. Number each question.
 - Every question ships a recommended answer. Word it so **"yes" accepts
   the recommendation.**
 - Wait for their answers before the next round.
-- Facts are not questions. A named game, `examples/hop`, `examples/9upper`,
-  or a URL they mentioned is looked up by a research subagent or by you —
-  never asked of the user.
+- Facts are not questions. A named game, film, or repo is looked up —
+  never described back to them as a question. That lookup is the one
+  Research brief in `references/crew.md`. You still fill a catalog shape
+  afterwards. Hop and 9UPPER are already in this skill; do not "research"
+  them as if they were outside titles.
 
 Recommend from what they already said. If they have not said, pick the
-nearest playable shape and offer it as the yes. When they are vague, give
-three or four concrete options and let them point.
+nearest shape and offer it as the yes.
 
 ```
 ❓ **Q1** - **What do the players do?**: Chase, collect, hop across lanes,
@@ -31,108 +36,128 @@ others run.
 ➡︎ Chase — one person is "it".
 ```
 
+## Reshape before anything else
+
+If the request is a fight, an FPS, mouse-look, an instant hit, or a
+precise platformer, round 1 is only this question. Recommended yes:
+
+> You face the way you move, and one button fires a slow shot. There is no
+> mouse-look and no instant hit. Same-room play feels fine; across the
+> internet it is mushy, so this is the version that works.
+
+If they need a hidden hand, fog of war, or a card nobody else can see,
+round 1 is only this question. Recommended yes:
+
+> Everyone's screen receives the whole game. A card can be drawn face-down,
+> but that does not stop someone from looking closely. Play it with people
+> you trust, or play it in the open.
+
+Do not scaffold either one until they accept the sentence. Do not edit
+`core/` to filter snapshots or to add mouse-look.
+
 ## First-round frontier
 
-Always ask these together. They pick the game, not the technology. Never
-say Canvas2D, Three.js, local server, WebRTC, virtual joystick, or pointer
-events. Each of the six ships a recommended answer.
+Ask these together once the shape fits, or in the round after they accept
+a reshape. Never say Canvas2D, Three.js, local server, WebRTC, virtual
+joystick, or pointer events.
 
-1. **What players do** — move, shoot, race, collect, draw, guess…
-2. **How it looks** — flat and top-down, or depth / little 3D objects you
-   look down on?
-3. **How many people** play at once.
-4. **How someone wins**, or is it just for fun.
-5. **Same room / same Wi-Fi**, or people somewhere else.
-6. **Phones or only computers?** If phones: **swipe** (one hop or step),
-   a **little stick** (keep moving), or **tap the picture** (cards / people).
+1. **What players do** — name the shape in plain language, not the file.
+2. **How many people** play at once.
+3. **How someone wins**, or is it just for fun.
+4. **Same room / same Wi-Fi**, or people somewhere else.
+5. **Phones or only computers?** Offer the move the shape already uses:
+   swipe for hop, a little stick for tag / race / shot, tap the picture
+   for party / board.
 
 ## A feature on a game that already exists
 
-Same rules. Do not edit `game.js` or the templates until they confirm a
-short replay of the **new thing**, not the whole game again.
+Same pause. Do not edit `game.js` until they confirm a short replay of
+the **new thing**. If the new thing is a different shape, say so and
+scaffold that shape. Do not bend `tag` into `hop` in the same file.
 
-First-round frontier for a feature — ask these together:
-
-1. **What changes in play** — what people now do or see.
-2. **When it happens** — first screen, each round, settings, only once…
-3. **Who sees it** — everyone, only that person, only the host.
-4. **Skip / empty** — what the game does if they do not fill it in.
-5. **Anything else in this change** — other wants that belong with it.
-   Empty is a valid answer.
-
-Recommend from the existing game. For 9UPPER / party games, a name on the
-first screen that everyone sees, with "Seat 2" if they skip, is the usual
-yes.
+1. **What changes in play.**
+2. **When it happens.**
+3. **Who sees it.**
+4. **What happens if they skip it.**
+5. **Anything else in this change.** Empty is a valid answer.
 
 ## Later rounds
 
-Ask only what the first answers unblocked. Typical next branches:
+Ask only what the first answers unblocked: teams versus free-for-all,
+everyone at once versus turns, cooperative versus competitive. Do not ask
+speed, size, or timing until the fun is confirmed. Those have defaults.
 
-- Teams vs free-for-all
-- Everyone at once vs taking turns
-- Cooperative vs competitive
-- Hidden-info honesty, if the game needs secrets (see below)
+If the pressure or the first moment is still missing, one more question,
+with a recommended yes taken from the shape they already accepted. Do not
+ask it when the first answers already imply it. The replay has to be able
+to name both. For a chase, the yes is:
 
-Do not ask speed, size, timing, or board size until the fun is confirmed.
-Those have defaults.
+```
+❓ **Q** - **What pushes you?**: I would make the pressure being caught —
+touch someone and they become "it". The first thing you see is one person
+already "it", and everyone else runs.
 
-## Defaults — after the fun is settled
+➡︎ Being caught is the pressure. One person starts as "it".
+```
 
-Fill these yourself and mention them in the replay. They are not first-round
-questions.
+## Defaults — say them in the replay, do not ask them first
 
 | Gap | Default |
 |---|---|
-| Keyboard | Arrows + WASD to move, Space for the main action |
-| Player count still fuzzy | 2–8 |
+| Keyboard | Arrows + WASD. Space fires in `shot`. |
+| Player count still fuzzy | Whatever the shape file allows |
 | Speed / size / timing | Something playable; tune after they try it |
-| Art style | Little 3D objects, four tones, outlines |
-| Win condition still fuzzy | A score, no forced ending |
-| Board size | A small arena you can take in at a glance |
+| Look | Little 3D objects, except `party` and `board`, which are a flat board |
+| Win condition still fuzzy | The shape's own ending |
+| Phone move still unsaid | The shape's move |
 
-If they said phones but not swipe / stick / tap:
+## Other limits — mention them if they come up
 
-| The game is… | Phone move |
-|---|---|
-| Hop, grid, race, one step at a time | swipe |
-| Chase, wandering / keep moving | stick |
-| Taps on cards, people, or a board | tap the picture — no stick |
-| Unsure | stick for a continuous walker; swipe if it is hop-like |
+Do not add them as first-round questions.
 
-## Shapes that fit
-
-A shared world, everyone moving or taking turns, the host deciding what
-happened:
-
-- Chase / survival, collect-the-things, arena shooters, racing
-- Co-op avoidance, drawing / party games
-- Turn-based boards (ignore everyone else's input on their off-turn)
-
-## Shapes that need reshaping
-
-Say so early and offer the nearest thing that works:
-
-- **Fast twitch** (fighting, precise platforming). Moves land a beat late.
-  Fine in the same room; mushy across the internet. Offer a slower version.
-- **Huge stored worlds.** Hundreds of saved objects choke the link. Tens
-  of stored things are fine. Scenery that follows from a seed and a clock
-  costs nothing on the wire — `examples/hop` is that pattern.
+- **Huge stored worlds.** Tens of stored things are fine. Scenery that
+  follows from a seed and a clock costs nothing on the wire. That is the
+  hop shape.
 - **Persistence between sessions.** Closing the host ends the game. Offer
   in-session scoring.
-- **Hidden info** (hands, fog of war). Every screen gets the whole state.
-  Do not claim secrets on the wire. Play it open, or among people who
-  trust each other not to peek.
+- **A car, a person, a tree that is not a block.** Ask before building it.
+  The recommended yes is: "This shape cannot be built out of blocks. I can
+  make it in Blender and drop it into the game. That needs you to connect
+  Blender." Do not say "MCP". If they decline, use the blocks. If they
+  accept and Blender is not connected, stop. Do not invent the model.
+  Do not open Mixos Studio, Spline, KoKraft, CoCraft, Clara.io, or
+  Tinkercad, and do not log in or add their runtimes. If they already
+  have their own `.gltf` or `.glb`, put it in `models/` and place it
+  with `g.model`. Do not build that file for them on another website.
 
 ## Done when
 
-Play the game back in four or five sentences: what is on screen, how you
-move (including a phone, if anyone is on one), how it ends. When they say
-that is the game, the main model scaffolds and launches the crew — research,
-look, and flow in parallel, then programming. See `references/crew.md`.
+Play the game back in **five sentences**, in this order. When they say
+that is the game, scaffold with `--shape` and edit that `game.js`. Run
+`check-game.mjs` before you hand over a link. Name the shape you will
+fill (`tag`, `race`, `shot`, `hop`, `party`, or `board`) after the five
+sentences, not instead of one of them.
 
-> You and up to 7 friends are dots in a box. One of you is "it" and glows
-> red — they move slightly faster and chase everyone else. Touch someone
-> and they become "it". On a phone you hold a little stick to keep moving;
-> on a computer the arrows still work. A scoreboard tracks how long each
-> person has spent being "it", and the lowest time is winning. It runs
-> until you stop it.
+1. **What is on screen.**
+2. **How you move**, including a phone if anyone is on one.
+3. **The pressure** — what repeats every few seconds, what a better player
+   does, and how a danger is visible before it lands. Success has to
+   change the score or who is "it", not only the picture.
+4. **How it ends**, or that it runs until they stop.
+5. **The first thing that happens.**
+
+> You and up to 7 friends are little figures in a small field; one of you
+> glows because they are "it" and move a bit faster.
+>
+> On a phone you hold a little stick to keep moving; on a computer the
+> arrows still work.
+>
+> The pressure is being caught: a touch hands "it" over, and the score is
+> how long you have been "it".
+>
+> It runs until you stop it.
+>
+> The first thing that happens is one person starts as "it" and the others
+> run.
+
+That replay is `tag`, even if they called the field flat.

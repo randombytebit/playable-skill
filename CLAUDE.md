@@ -24,12 +24,15 @@ that already exists — including the projects in `examples/`, which are copies.
 standalone copy of `skills/playable/` still works. Do not keep a second copy of
 an example's `game.js` under `templates/` — they drift.
 
-When a user wants a game, the skill's runtime is grill then crew waves — not
-a single agent dumping `game.js`. The model that loaded `SKILL.md` interviews
-in rounds (`references/interview.md`) until they confirm a replay, then
-scaffolds and launches research / look / flow in parallel, then programming
-writes only `game.js` (`references/crew.md`). Keep those procedures in the
-reference files. Do not collapse the skill back into one-shot generation.
+When a user wants a game, the skill's runtime is grill, then one catalog
+shape. The model that loaded `SKILL.md` classifies `tag` / `race` / `shot` /
+`hop` / `party` / `board` (`references/shapes.md`), interviews in rounds
+(`references/interview.md`) until they confirm a replay, scaffolds with
+`--shape`, and edits that `game.js`. It does not launch a crew to invent
+the game. `references/crew.md` is only a single Research brief when they
+name an outside title. Do not collapse this back into one-shot generation,
+and do not put a parallel Research / Look / Flow crew back on the default
+path.
 
 Chrome and restyles follow the personal skill
 `~/.cursor/skills/design-taste-frontend` (tasteskill) as teacher: app-screen
@@ -46,6 +49,9 @@ node skills/playable/scripts/new-game.mjs <dir> --transport=local|tab [--render=
 
 # Check a scaffolded project: Node, port, files, renderer, vendored libs, game.js
 node skills/playable/scripts/doctor.mjs <dir>
+
+# Check game.js is still the shape --shape recorded (no starter, no hop clone)
+node skills/playable/scripts/check-game.mjs <dir>
 
 # End-to-end test of a local-transport project — no browser needed.
 # The regression test for anything in templates/core/ or transport-local/.
@@ -199,9 +205,9 @@ Which build gets vendored is not arbitrary:
   bare imports and cannot load without a bundler.
 - `three/build/three.module.js` **and** `three.core.js` — the former imports the
   latter by relative path, so both must land side by side. Neither has bare
-  imports, which is what makes a bundler unnecessary. Three.js *addons*
-  (`OrbitControls` and friends) import bare `'three'` and would force an import
-  map — avoid them.
+  imports. `GLTFLoader.js` does import bare `'three'`, so the shell's import
+  map points that name at the vendored module. Copy the loader and its two
+  util files with it. Do not add other addons (`OrbitControls` and the rest).
 
 Vendoring also keeps a project deployable to any static host with no runtime CDN
 call, and playable on a LAN with no internet at all.

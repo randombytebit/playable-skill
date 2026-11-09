@@ -10,7 +10,7 @@
 
 import * as THREE from '../vendor/three/three.module.js'
 import { createKit } from './kit.js'
-import { BACKGROUND } from './theme.js'
+import { BACKGROUND, KEY_LIGHT } from './theme.js'
 
 // Direction from the camera's target to the camera. Mostly above and behind,
 // offset sideways for the three-quarter view.
@@ -38,10 +38,10 @@ export function createSurface(canvas, { units = 15 } = {}) {
   scene.background = new THREE.Color(BACKGROUND)
 
   // One key light from above gives the lighter tops the style calls for; the
-  // hemisphere fill keeps the shadowed sides from going to mud. No shadow maps
-  // — contact is sold by the halos in kit.js, far cheaper and more controlled.
+  // hemisphere fill keeps the shadowed sides from going to mud. No shadow maps.
+  // The ground shadow in kit.js follows this same KEY_LIGHT.
   const key = new THREE.DirectionalLight(0xffffff, 2.1)
-  key.position.set(6, 12, -4)
+  key.position.set(KEY_LIGHT.x, KEY_LIGHT.y, KEY_LIGHT.z)
   scene.add(key)
   scene.add(new THREE.HemisphereLight(0xdfefff, 0x6b6250, 1.5))
 

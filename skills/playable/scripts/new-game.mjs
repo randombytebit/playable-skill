@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 // Scaffolds a playable game project.
 //
+//   node scripts/new-game.mjs <target-dir> --transport=local|tab --shape=tag|race|shot|hop|party|board
 //   node scripts/new-game.mjs <target-dir> --transport=local|tab [--render=2d|3d]
 //                             [--example=hop|9upper] [--title="…"]
 //
 // Composes: shell + core + renderer + one transport. The result is a complete,
 // runnable project whose only game-specific file is game.js.
+//
+// --shape copies skills/playable/shapes/<name>.js and records the name on
+// package.json so check-game.mjs can reject a hop clone. The shape picks the
+// renderer. --example still copies a full demo and does not set a shape.
 
 import { cp, mkdir, readdir, writeFile } from 'node:fs/promises'
 import { existsSync, readdirSync } from 'node:fs'
@@ -14,16 +19,27 @@ import { fileURLToPath } from 'node:url'
 
 const SKILL = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const TEMPLATES = join(SKILL, 'templates')
+const SHAPES = join(SKILL, 'shapes')
+// tag / race / shot / hop are the 3D kit. party / board are the 2D paper kit.
+const SHAPE_RENDER = {
+  tag: '3d',
+  race: '3d',
+  shot: '3d',
+  hop: '3d',
+  party: '2d',
+  board: '2d',
+}
 // Runnable example projects live at the repo root; their game.js is the source
 // of truth. Falls back to templates/examples so a standalone copy of
 // skills/playable/ still works on its own.
 const REPO_EXAMPLES = resolve(SKILL, '..', '..', 'examples')
 
 function parseArgs(argv) {
-  const opts = { transport: 'local', render: '2d', example: null, title: null, target: null }
+  const opts = { transport: 'local', render: null, shape: null, example: null, title: null, target: null }
   for (const arg of argv) {
     if (arg.startsWith('--transport=')) opts.transport = arg.slice(12)
     else if (arg.startsWith('--render=')) opts.render = arg.slice(9)
+    else if (arg.startsWith('--shape=')) opts.shape = arg.slice(8)
     else if (arg.startsWith('--example=')) opts.example = arg.slice(10)
     else if (arg.startsWith('--title=')) opts.title = arg.slice(8)
     else if (!arg.startsWith('--')) opts.target ??= arg
@@ -63,6 +79,23 @@ if (!opts.target) die('Pass a target directory.\n           node scripts/new-gam
 if (!['local', 'tab'].includes(opts.transport)) {
   die(`Unknown transport "${opts.transport}". Use --transport=local or --transport=tab.`)
 }
+if (opts.shape && opts.example) {
+  die('Pass --shape or --example, not both.')
+}
+if (opts.shape) {
+  const render = SHAPE_RENDER[opts.shape]
+  if (!render) {
+    die(`Unknown shape "${opts.shape}". Use --shape=${Object.keys(SHAPE_RENDER).join('|')}.`)
+  }
+  if (!existsSync(join(SHAPES, `${opts.shape}.js`))) {
+    die(`Missing shapes/${opts.shape}.js.`)
+  }
+  if (opts.render && opts.render !== render) {
+    die(`--shape=${opts.shape} uses --render=${render}.`)
+  }
+  opts.render = render
+}
+if (!opts.render) opts.render = '2d'
 if (!['2d', '3d'].includes(opts.render)) {
   die(`Unknown renderer "${opts.render}". Use --render=2d or --render=3d.`)
 }
@@ -98,6 +131,7 @@ const pkg = {
   scripts: {},
   dependencies: {},
 }
+if (opts.shape) pkg.playable = { shape: opts.shape }
 
 if (opts.transport === 'local') {
   await cp(join(transportDir, 'server.mjs'), join(target, 'server.mjs'))
@@ -121,16 +155,20 @@ if (pkg.dependencies.peerjs || pkg.dependencies.three) {
 }
 
 // The one game-specific file.
-const gameSrc = opts.example
-  ? findExample(opts.example)
-  : join(TEMPLATES, opts.render === '3d' ? 'starter-game-3d.js' : 'starter-game.js')
+const gameSrc = opts.shape
+  ? join(SHAPES, `${opts.shape}.js`)
+  : opts.example
+    ? findExample(opts.example)
+    : join(TEMPLATES, opts.render === '3d' ? 'starter-game-3d.js' : 'starter-game.js')
 await cp(gameSrc, join(target, 'game.js'))
 
 await writeFile(join(target, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
 await writeFile(join(target, '.gitignore'), 'node_modules/\nvendor/\n')
 await writeFile(join(target, 'README.md'), readmeFor(opts))
 
-console.log(`\n  Created ${target}\n`)
+console.log(`\n  Created ${target}`)
+if (opts.shape) console.log(`  Shape: ${opts.shape} (${opts.render})`)
+console.log('')
 console.log(`  Next:\n`)
 console.log(`    cd ${opts.target}`)
 console.log(`    npm install`)
@@ -181,7 +219,7 @@ ${how}
 ## Changing the game
 
 Describe what you want changed in plain language and let Claude edit \`game.js\`.
-The surrounding files (\`core/\`, \`net.js\`, \`render-2d/\`) are plumbing and should
+The surrounding files (\`core/\`, \`net.js\`, \`renderer/\`) are plumbing and should
 not need to change.
 `
 }

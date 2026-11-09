@@ -67,6 +67,9 @@ const vendored = [
   transport === 'tab' && ['Networking library', 'vendor/peerjs.min.js'],
   is3d && ['3D library', 'vendor/three/three.module.js'],
   is3d && ['3D library core', 'vendor/three/three.core.js'],
+  is3d && ['3D model loader', 'vendor/three/addons/loaders/GLTFLoader.js'],
+  is3d && ['3D model loader utils', 'vendor/three/addons/utils/BufferGeometryUtils.js'],
+  is3d && ['3D model loader utils', 'vendor/three/addons/utils/SkeletonUtils.js'],
 ].filter(Boolean)
 
 for (const [label, file] of vendored) {

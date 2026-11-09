@@ -10,7 +10,15 @@
   <body>
     <canvas id="stage"></canvas>
     <div id="lobby" data-ui></div>
-    <!-- No bundler: the browser loads the ES modules directly. -->
+    <!-- No bundler. 'three' exists so the vendored glTF loader can import it.
+         Nothing fetches that file until a 3D model actually loads. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three/three.module.js"
+        }
+      }
+    </script>
     <script type="module" src="./core/main.js"></script>
   </body>
 </html>

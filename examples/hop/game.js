@@ -387,7 +387,7 @@ export default {
     for (const [id, p] of Object.entries(state.players)) {
       if (p.dead) continue
       const self = id === selfId
-      g.halo({ id: `ph:${id}`, x: p.x, z: p.z, size: 1.3 })
+      g.halo({ id: `ph:${id}`, x: p.x, z: p.z, y: p.y, h: 0.78, size: 1.3 })
       g.box({
         id: `p:${id}`,
         x: p.x,

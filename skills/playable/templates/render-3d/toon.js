@@ -9,7 +9,7 @@
 // combinations, so they are built once and reused forever.
 
 import * as THREE from '../vendor/three/three.module.js'
-import { outlineColor, toneColor } from './theme.js'
+import { HALO, outlineColor, toneColor } from './theme.js'
 
 // Four bands, darkest to lightest. Spread much wider than the ~3% used between
 // part tones: these bands are what communicate three-dimensional form, and at
@@ -60,22 +60,41 @@ export function lineMaterial(hue) {
   return material
 }
 
-/** Soft dark blob used as a contact shadow under each solid. */
-export function haloTexture() {
-  if (haloTexture.cached) return haloTexture.cached
-  const size = 64
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
-  const ctx = canvas.getContext('2d')
-  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-  gradient.addColorStop(0, 'rgba(0,0,0,0.42)')
-  gradient.addColorStop(0.6, 'rgba(0,0,0,0.16)')
-  gradient.addColorStop(1, 'rgba(0,0,0,0)')
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, size, size)
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.colorSpace = THREE.SRGBColorSpace
-  haloTexture.cached = texture
-  return texture
+/**
+ * One shared shadow disc. kit.js writes uPenumbra and uOpacity per object in
+ * onBeforeRender, so a jumper can be softer than a contact blob without a
+ * second shader compile.
+ */
+export function createHaloMaterial() {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+    uniforms: {
+      uPenumbra: { value: 0 },
+      uOpacity: { value: 0.55 },
+      uColor: { value: new THREE.Color(HALO) },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uPenumbra;
+      uniform float uOpacity;
+      uniform vec3 uColor;
+      void main() {
+        float d = length(vUv - 0.5) * 2.0;
+        float edge = mix(0.04, 0.55, clamp(uPenumbra, 0.0, 1.0));
+        float alpha = (1.0 - smoothstep(1.0 - edge, 1.0, d)) * uOpacity;
+        if (alpha < 0.004) discard;
+        gl_FragColor = vec4(uColor, alpha);
+      }
+    `,
+  })
 }

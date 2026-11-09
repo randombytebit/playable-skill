@@ -15,7 +15,8 @@ g.box({ id, x, y, z, w, h, d, hue, tone, ry, rx, outline })
 g.cylinder({ id, x, y, z, r, h, hue, tone, ry, rx })
 g.cone({ id, x, y, z, r, h, hue, tone, rx })
 g.sphere({ id, x, y, z, r, hue, tone })
-g.halo({ id, x, z, size })        // soft contact shadow
+g.halo({ id, x, z, y, h, size }) // ground shadow; omit y/h for a hard contact blob
+g.model({ id, url, x, y, z, hue, tone }) // a glTF file, same toon material
 g.follow(x, y, z)                 // point the camera; call once per frame
 g.hud({ topLeft, topRight, center, bottom })  // text, drawn in the DOM
 ```
@@ -70,7 +71,7 @@ ported rather than copied:
 | Four tones, ~3% apart | `toneColor()` in `theme.js` |
 | Thin border lines on every edge | `EdgesGeometry` + `LineSegments` per mesh |
 | Lighter tops, shaded sides | 4-band toon gradient map + one key light |
-| Soft dark halo under the base | `g.halo()`, a radial-gradient sprite |
+| Soft dark halo under the base | `g.halo()`, a disc on the ground. Higher `y` / `h` shifts it along the key light and softens the edge |
 | Clear readable solids | Orthographic camera, fixed three-quarter angle |
 
 Two deliberate deviations, both for a game rather than an illustration:
@@ -84,13 +85,13 @@ Two deliberate deviations, both for a game rather than an illustration:
 
 - **Outlines are always one device pixel.** `LineBasicMaterial.linewidth` is
   ignored by every major browser's WebGL. That lands near the "thin 0.6px"
-  intent; anything thicker needs the `Line2` addon, which imports bare `'three'`
-  and would force an import map.
+  intent; anything thicker needs the `Line2` addon. The import map exists for the
+  glTF loader only — do not add Line2 or other addons.
 - **Smooth shapes get no outline.** Border lines come from real geometric edges,
   so a high-segment sphere has none. `g.sphere` is deliberately coarse
   (10×6 segments → 40 lines); at 12×8 it silently drops to zero.
-- **No shadow maps.** Contact is sold by `g.halo()`. Cheaper, and more
-  controllable than a real shadow at this scale.
+- **No shadow maps, and no raymarched scene.** `g.halo()` is a disc on the ground plane. Omit `y` and `h` and it sits under the object, small and sharp. Pass the caster's bottom `y` and height `h` and the disc slides along the key light and goes soft, the penumbra a Shadertoy raymarcher would use, without turning the world into an SDF. It does not cast from one mesh onto another.
+- **Models are files.** `g.model({ id, url, x, y, z, hue, tone })` loads a glTF from `models/`. The file does not have to come from Blender; a `.gltf` or `.glb` they already have is enough. `url` is a path, not bytes in `state`. The kit replaces the file's materials with the same hue / tone toon material. `y` is the bottom, same as `g.box`. Collision stays in `step` as a simple distance — do not read the mesh. Outlines are not added to imported meshes. Do not open Mixos Studio, Spline, KoKraft, CoCraft, Clara.io, or Tinkercad to make the file, and do not add their runtimes.
 - **Draw calls.** Each solid costs two (mesh + outline). A few hundred solids is
   comfortable; a few thousand is not. Pass `outline: false` on ground slabs and
   other large flat pieces — a grid of lines under everything reads as noise

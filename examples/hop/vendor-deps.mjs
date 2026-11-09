@@ -26,6 +26,11 @@ const JOBS = {
   three: [
     ['build/three.module.js', 'vendor/three/three.module.js'],
     ['build/three.core.js', 'vendor/three/three.core.js'],
+    // GLTFLoader imports bare 'three' (resolved by the import map) plus these
+    // two siblings. Copy the tree so a Blender glTF loads with no CDN.
+    ['examples/jsm/loaders/GLTFLoader.js', 'vendor/three/addons/loaders/GLTFLoader.js'],
+    ['examples/jsm/utils/BufferGeometryUtils.js', 'vendor/three/addons/utils/BufferGeometryUtils.js'],
+    ['examples/jsm/utils/SkeletonUtils.js', 'vendor/three/addons/utils/SkeletonUtils.js'],
   ],
 }
 

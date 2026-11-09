@@ -44,18 +44,28 @@ one that works. Either way, the game only runs while your terminal or tab is ope
 
 ## Examples
 
-Complete, playable projects:
+Complete, playable projects. They stay on your machine. This skill does not
+put a game on the internet.
 
 | | |
 |---|---|
-| **[examples/hop](./examples/hop)** | 3D two-player Crossy Road. Race to lane 50, dodge traffic, grab coins. |
-| **[examples/9upper](./examples/9upper)** | 9UPPER. 2D party game, 3–9 players. Create a room, invite with a link or QR. |
+| **[examples/hop](./examples/hop)** | Two players. A phone swipes one step at a time; a computer uses the arrows. First to lane 50 wins — dodge the traffic, grab the coins. |
+| **[examples/9upper](./examples/9upper)** | 3–9 players. A phone taps the picture. One person knows the fact, the others bluff, and the guesser picks who knew. Invite with the link or the QR. |
 
 ```sh
 cd examples/hop && npm install && npm start
 ```
 
-Then open the printed address in two browser windows.
+Then open the printed address in two browser windows. Friends on the same
+Wi-Fi use the second address. The game runs only while that terminal stays
+open.
+
+```sh
+cd examples/9upper && npm install && npm start
+```
+
+Same idea: the printed address, two windows, and it stops when the terminal
+closes. There is no public link for either example.
 
 ## For developers
 

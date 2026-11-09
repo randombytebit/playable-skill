@@ -19,8 +19,9 @@
 // a thousand boxes of different dimensions still share one BoxGeometry.
 
 import * as THREE from '../vendor/three/three.module.js'
-import { fillMaterial, haloTexture, lineMaterial } from './toon.js'
-import { HALO } from './theme.js'
+import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js'
+import { createHaloMaterial, fillMaterial, lineMaterial } from './toon.js'
+import { projectHalo } from './theme.js'
 
 const PRUNE_AFTER_FRAMES = 180 // ~3 seconds at 60fps
 
@@ -48,12 +49,9 @@ export function createKit(scene) {
   )
 
   const haloGeometry = new THREE.PlaneGeometry(1, 1)
-  const haloMaterial = new THREE.MeshBasicMaterial({
-    map: haloTexture(),
-    transparent: true,
-    depthWrite: false, // Halos must not occlude each other or the ground.
-    color: HALO,
-  })
+  const haloMaterial = createHaloMaterial()
+  const gltfLoader = new GLTFLoader()
+  const modelTemplates = new Map()
 
   const pool = new Map()
   let frame = 0
@@ -118,16 +116,62 @@ export function createKit(scene) {
     cone: (opts) => solid('cone', opts),
     sphere: (opts) => solid('sphere', opts),
 
-    /** Soft contact shadow. Draw one under anything that should feel grounded. */
-    halo({ id, x = 0, z = 0, size = 1, y = 0.012 }) {
+    /**
+     * Soft shadow on the ground. y is the bottom of the caster, h its height.
+     * Leave both off and the blob stays under (x, z), small and sharp.
+     */
+    halo({ id, x = 0, z = 0, y = 0, h = 0, size = 1 }) {
+      if (!id) throw new Error('[playable] every halo needs a stable id')
+      const shadow = projectHalo({ x, z, y, h, size })
       const mesh = acquire(`halo:${id}`, () => {
         const m = new THREE.Mesh(haloGeometry, haloMaterial)
         m.rotation.x = -Math.PI / 2
+        m.onBeforeRender = function () {
+          haloMaterial.uniforms.uPenumbra.value = this.userData.penumbra
+          haloMaterial.uniforms.uOpacity.value = this.userData.opacity
+        }
         return m
       })
-      mesh.position.set(x, y, z)
-      mesh.scale.set(size, size, 1)
+      mesh.position.set(shadow.x, shadow.y, shadow.z)
+      mesh.scale.set(shadow.size, shadow.size, 1)
+      mesh.userData.penumbra = shadow.penumbra
+      mesh.userData.opacity = shadow.opacity
       return mesh
+    },
+
+    /**
+     * A Blender glTF, drawn with the same toon material as the kit.
+     * The file stays on disk — do not put its bytes in state.
+     * y is the bottom of the model, same as g.box.
+     */
+    model({ id, url, x = 0, y = 0, z = 0, ry = 0, scale = 1, hue = 'slate', tone = 'mid' }) {
+      if (!id) throw new Error('[playable] every model needs a stable id')
+      if (!url) throw new Error('[playable] model needs a url')
+      const group = acquire(`model:${id}`, () => new THREE.Group())
+      if (group.userData.url !== url) {
+        group.userData.url = url
+        group.userData.hue = null
+        group.clear()
+        loadTemplate(url).then((template) => {
+          if (group.userData.url !== url) return
+          const inner = template.clone(true)
+          seatOnGround(inner)
+          paint(inner, hue, tone)
+          group.add(inner)
+          group.userData.hue = hue
+          group.userData.tone = tone
+        }).catch((err) => {
+          console.error('[playable] model failed to load:', url, err)
+        })
+      } else if (group.userData.hue !== hue || group.userData.tone !== tone) {
+        paint(group, hue, tone)
+        group.userData.hue = hue
+        group.userData.tone = tone
+      }
+      group.position.set(x, y, z)
+      group.rotation.y = ry
+      group.scale.setScalar(scale)
+      return group
     },
 
     /** Point the camera at a spot in the world. Call once per frame. */
@@ -158,6 +202,28 @@ export function createKit(scene) {
     },
 
     _stats: () => ({ pooled: pool.size, frame }),
+  }
+
+  function loadTemplate(url) {
+    let pending = modelTemplates.get(url)
+    if (!pending) {
+      pending = gltfLoader.loadAsync(url).then((gltf) => gltf.scene)
+      modelTemplates.set(url, pending)
+    }
+    return pending
+  }
+
+  function seatOnGround(object) {
+    object.updateWorldMatrix(true, true)
+    const box = new THREE.Box3().setFromObject(object)
+    if (Number.isFinite(box.min.y)) object.position.y -= box.min.y
+  }
+
+  function paint(object, hue, tone) {
+    const material = fillMaterial(hue, tone)
+    object.traverse((child) => {
+      if (child.isMesh) child.material = material
+    })
   }
 
   return kit

@@ -1,288 +1,194 @@
 ---
 name: playable
-description: Build a multiplayer web game that runs on the user's own device, with no cloud backend, no deploy and no accounts — players join over the local network or by a direct peer-to-peer link. Use whenever someone describes a game they want to make and play with other people ("I want a game", "I want to make a game where…", "build me a 2-player game", "can we make a game my friends can join"), or asks to change, extend or debug a game previously built with this skill. Grill the idea in rounds until they confirm a plain-language replay, then scaffold and build with parallel helpers. Assume the user is NOT a programmer: do the technical work for them and talk about the game, not the code.
+description: >-
+  Build a multiplayer web game on the user's own device — no cloud, no
+  deploy, no accounts. Use when friends play together on the same Wi-Fi,
+  in the same room (living room, park), or somewhere else by a direct link,
+  room code, or QR; when they want to open a room, join from a phone, or
+  change, extend, or debug a game this skill already built (a failed join,
+  a late connection, moves that feel late). Do not use it for a solo
+  polished Three.js showcase, a game to deploy (Netlify or any host), an
+  FPS, mouse-look, an instant hit, a precise platformer, or a real hidden
+  hand — reshape those into shot or an open party, or say this skill does
+  not do them. Grill in rounds until they confirm a five-sentence replay
+  (what is on screen, how you move including a phone, the pressure, how it
+  ends, the first thing that happens). Pick one shape (tag, race, shot,
+  hop, party, board) and fill only that game.js. A small change is one
+  edit to game.js, then check-game. A different kind of game is a new
+  scaffold; do not turn tag into hop in the same file. Hand over the
+  address they open and the link or QR their friends open. The game runs
+  only while their terminal (same Wi-Fi) or tab (friends elsewhere) stays
+  open. Ask them to try two browser windows before inviting anyone. The
+  user is not a programmer: talk about the game, not the code. If they
+  write in Traditional Chinese, answer in Traditional Chinese and keep
+  technical names in English.
 ---
 
 # playable
 
-Turn a plain-language description of a game into a working multiplayer web game
-that the user hosts on their own machine.
+Turn a plain-language description into a working multiplayer web game that
+the user hosts on their own machine.
 
-**The person you are talking to is probably not a programmer.** They can describe
-a game and they can follow "open this link". They cannot debug a stack trace, and
-they did not ask for one. Talk about the game. Keep the code to yourself.
+**The person you are talking to is probably not a programmer.** Talk about
+the game. Keep the code to yourself.
 
-## The one rule
+## The four rules
 
-Everything game-specific lives in **one file: `game.js`**. Everything else —
-`core/`, `net.js`, `render-2d/`, `server.mjs` — is plumbing that ships as-is.
+1. Do not scaffold, do not write `game.js`, and do not launch a subagent
+   until they confirm the five-sentence replay in `references/interview.md`.
+2. After that, edit **only `game.js`**. If the game needs a change in
+   `core/`, `net.js`, `renderer/`, `server.mjs`, or `templates/`, stop and
+   say so. That is a template gap, not a patch in their project.
+3. Tell them the address they open and the link their friends open. No
+   stack traces, no library names.
+4. Pick **one** shape from `references/shapes.md` before you scaffold.
+   If the request is a fight, an FPS, a precise platformer, or a real
+   secret, the first question is the reshape sentence in that file. Do not
+   invent a seventh architecture.
 
-If you find yourself editing plumbing to make a game work, stop: either the game
-belongs in `game.js`, or you have found a real gap in the templates worth
-mentioning to the user rather than patching around.
-
-Shared chrome is already in the templates. Do not rebuild it in `game.js`.
-
-- First visit: a **name** (about 12 characters), then **Create a room** or
-  **Join with a room ID**. An invite link skips this and joins with the saved
-  name, or Seat N until they set one in settings. Everyone in the room sees
-  every name.
-- After that: a **settings icon in the top-right**. Room ID, invite link, QR
-  code, player count, how the connection feels, **name** (they can change it),
-  **language** (Traditional Chinese or English — the host picks, everyone
-  follows), optional **card-read and discussion timers** (host clock, same for
-  everyone), and **Leave room**. After a round, show who scored and who was
-  guesser / knower / 9upper. A failed connection opens the sheet by itself. On
-  a phone, stack the join field above the Join button and keep 44pt hit
-  targets inside the safe area.
-- Look of the chrome: true black ground `#000000`, panels one step up `#111111`,
-  nested `#2A2A2A`. No glass, no blur, no resting shadows. The one primary
-  control is a white pill with black type. Crimson `#C41E3A` is for data (the
-  clock, a selected person, a failed ping), never for buttons or nav. Steel
-  `#2B5A8A` is the knower. Keep system type — no webfont, so it still works
-  offline. When restyling, follow the personal skill
-  `design-taste-frontend` (tasteskill) as teacher: app-screen run, `--keep
-  palette,type`. Do not copy that skill into this repo. Draw and inspect
-  with `--out ~/.taste-skill/playable` — never a `.taste-skill/` folder here.
+You — the main model — grill, scaffold, edit `game.js`, run `check-game`,
+and hand over the link. Subagents do not interview. A subagent is allowed
+only when they name a game, film, or repo that is not already this catalog:
+one Research brief (what to borrow, what not to copy), then you still fill
+the chosen shape yourself. See `references/crew.md`. Do not launch
+Research, Look, and Flow as the way the game gets written.
 
 ## Flow
 
-### 1. Grill
+### 1. Classify, then grill
 
-You — the main model — talk to the user. Subagents never interview. Do not
-scaffold and do not write `game.js` until they confirm the replay in step 2.
+Read `references/shapes.md` and `references/interview.md`. Work in rounds.
+Each round is one message: numbered questions, each with a recommended
+answer worded so "yes" accepts it. Wait. Never say Canvas2D, Three.js,
+local server, WebRTC, virtual joystick, or pointer events.
 
-The same pause applies when they ask to **add a feature** to a game that
-already exists. Ask through what they want — when it happens, who sees it,
-what happens if they skip, and whether anything else belongs in the same
-change — then play the feature back and wait. Only then may a programming
-subagent start.
+The shape picks the renderer. "Flat", "top-down", "playground", and
+"simple" stay on the 3D kit unless the shape is `party` or `board`.
+`--render=2d` is only those two. Do not ask them to choose a renderer.
 
-Work in **rounds**. Each round is one message: numbered questions you can
-already ask, each with a **recommended answer** worded so "yes" accepts it.
-Wait before the next round. Phones (and swipe / a little stick / tap the
-picture) belong in the **first** round. Never say Canvas2D, Three.js, local
-server, WebRTC, virtual joystick, or pointer events.
+Phones belong in the first round, in plain language. The shape already
+knows the move: stick (`tag`, `race`, `shot`), swipe (`hop`), or tap the
+picture (`party`, `board`). Keyboard still works on a computer.
 
-If they confirm phones but still do not pick a style:
+### 2. Confirm the replay
 
-| The game is… | Phone move |
+Read the five-sentence replay in `references/interview.md`. The sentences
+are what is on screen, how you move (including a phone, if anyone is on
+one), the pressure, how it ends, and the first thing that happens. Confirm
+before scaffolding.
+
+### 3. Pick the transport (your decision)
+
+| They said | Use |
 |---|---|
-| Hop, grid, race, one step at a time | swipe |
-| Chase, wandering / keep moving | stick |
-| Taps on cards, people, or a board | they tap the picture — no stick |
-| Unsure | stick for a continuous 3D walker; swipe if it is hop-like |
+| Same room / same Wi-Fi / "my family" | `--transport=local` |
+| Friends elsewhere / "online" / "over Discord" | `--transport=tab` |
+| Not sure | `--transport=local` |
 
-If they name a game, a film, or a repo as a style reference, look it up —
-do not ask them to describe it. Keyboard always works on a computer.
+`references/transports.md` has the tradeoffs. Do not ask them to pick.
 
-See `references/interview.md` for the round format, later-round branches,
-and shapes that need reshaping first.
+### 4. Scaffold that shape
 
-### 2. Confirm the spec
-
-Play the game back in four or five sentences — what is on screen, what the
-controls do (including how a phone moves, if anyone is playing on one), what
-makes it end. This is the shared-understanding gate: confirm before picking
-a transport or scaffolding. Wrong assumptions are cheap here.
-
-### 3. Pick the transport (your decision, not theirs)
-
-| They said | Use | Why |
-|---|---|---|
-| Same room / same Wi-Fi / "my family" | `--transport=local` | Rock solid, no third parties, works offline |
-| Friends elsewhere / "online" / "over Discord" | `--transport=tab` | Direct peer-to-peer, nothing to deploy |
-| Not sure | `--transport=local` | Fewer ways to fail; switching later is a rescaffold |
-
-`references/transports.md` has the full tradeoffs, including when `tab` simply
-cannot connect.
-
-### 4. Pick a renderer (also your decision)
-
-| They described | Use | Notes |
-|---|---|---|
-| Depth, hopping, driving, anything "3D" | `--render=3d` | Three.js, orthographic, with a real art layer |
-| Top-down, flat, board-like, "simple" | `--render=2d` | Canvas2D, no dependency |
-| Nothing visual at all | `--render=3d` | It looks better by default; see below |
-
-**This skill is for Three.js games first.** Prefer `--render=3d` unless they
-clearly want a flat board. `--render=3d` ships a palette, four-tone shading,
-outlines and contact shadows, so a game looks designed without the user asking.
-
-Be straight about this: **`--render=2d` is a bare canvas context with no art
-layer.** Games built on it look like debug output unless you hand-draw
-everything. Copy `examples/9upper` when they want a flat board that still
-looks designed (black, white, crimson, steel).
-
-### 5. Scaffold
+Scripts and shapes live **next to this SKILL.md**, not in the user's
+project and not under `examples/`.
 
 ```sh
-node skills/playable/scripts/new-game.mjs <dir> --transport=local|tab [--render=2d|3d] \
-  [--example=hop|9upper] [--title="…"]
+node <skill-dir>/scripts/new-game.mjs <dir> --transport=local|tab --shape=tag|race|shot|hop|party|board
 cd <dir> && npm install
 ```
 
-Pass `--example` only when the user wants to see something working first.
-Otherwise the scaffold lands a runnable placeholder you then replace.
+Do not pass `--render` (the shape sets it) or `--example` (that copies a
+demo and skips the shape check). Do not open `examples/hop` unless the
+shape is hop. Do not open `examples/9upper` to clone it; `party` is the
+file you fill.
 
-Existing examples live in `examples/` at the repo root and are complete,
-playable projects — read one before writing a new game:
+### 5. Fill `game.js`
 
-- **`examples/hop`** — 3D, two-player Crossy Road. **The default reference** for
-  the 3D kit, for smooth motion, and for computing world content instead of
-  sending it.
-- **`examples/9upper`** — titled **9UPPER**. 2D party game, 3–9 players.
-  Pointer taps, no stick. Black, white, crimson, steel. Original cards:
-  a public proper-noun topic plus category tag, a hidden fact — take a
-  published game's shape, not its deck.
+The scaffold already copied the shape. Change rules, scores, and words.
+Keep the tokens `references/shapes.md` lists, or `check-game` will fail.
+Read `references/feel.md` before you tune a speed, a hit, a coin, or a
+win. Feedback stays in `game.js` with the kit that file names.
 
-### 6. Crew — parallel subagents
+`init` / `onJoin` / `onLeave` / `step` run only on the host and must not
+touch the DOM. `draw` runs everywhere and must not change `state`. State
+stays JSON. Name moving positions in `lerp`. Never lerp scores. Do not
+raise the tick rate. `references/netcode.md` says why. For 3D drawing,
+read `references/render-3d.md` before you add a mesh.
 
-You stay the host. Subagents never talk to the user and never edit plumbing
-(`core/`, `net.js`, `renderer/`, `server.mjs`, templates).
+Blocks first: `g.box`, `g.sphere`, `g.cylinder`, `g.cone`. The shapes
+already are those. Ask about Blender only when they want an object the
+blocks cannot be — a car, a person, a tree that is not a box. Say this,
+and wait. Do not say "MCP":
 
-After the scaffold:
+> This shape cannot be built out of blocks. I can make it in Blender and
+> drop it into the game. That needs you to connect Blender.
 
-1. **Wave 1**, in **one turn**, in parallel: **Research** (named games /
-   films / repos — what to take, what not to copy), **Look** (the 2D or 3D
-   drawing plan), **Flow** (phases, state, who may act).
-2. Merge the three briefs. If they fight, the confirmed replay and the hop /
-   9UPPER contract win.
-3. **Wave 2:** Programming writes only `game.js`.
+If they say no, stack blocks. If they say yes and no Blender tool is
+connected, stop and tell them Blender is not connected yet. Do not fake
+the model. If they say yes and it is connected, build an original glTF
+into `models/` and place it with `g.model`. See `references/shapes.md`.
 
-If you cannot launch subagents, do the four jobs yourself as separate passes
-in the same order — do not skip to coding.
+With no Blender, keep stacking blocks. Do not open Mixos Studio, Spline,
+KoKraft, CoCraft, Clara.io, or Tinkercad, and do not log in or add their
+runtimes. A glTF file does not have to come from Blender: if they already
+have their own `.gltf` or `.glb`, put it in `models/` and place it with
+`g.model`. Do not build that file for them on another website.
 
-See `references/crew.md` for prompts and what each brief must contain.
-
-### 7. Write `game.js`
-
-Read `examples/hop` first (or `examples/9upper` for a tap / party board) and
-follow its shape. The contract — 3D is the default:
-
-```js
-export default {
-  title: 'Hop',
-  players: { min: 2, max: 4 },
-  input: { keys: ['up','down','left','right'], pointer: false, touch: 'swipe' },
-  // touch: 'swipe' | 'stick' when phones play; omit if computers only. Keyboard always works.
-  view: { units: 15 },                 // 3D: world units of camera height
-  // view: { width: 960, height: 540 }, // 2D only: logical pixels
-  lerp: { players: ['x', 'y', 'z'] },  // 3D positions. Never scores.
-
-  init()                  { return { players: {} } },  // host: initial state
-  onJoin(state, id)       {},                          // host: add a player
-  onLeave(state, id)      {},                          // host: remove a player
-  step(state, inputs, dt) {},                          // host: advance the game
-  draw(g, state, selfId)  {},                          // everyone: render
-}
-```
-
-For 3D, `g` is a pooled drawing kit rather than a canvas context — every call
-takes a stable `id`, and colour is a `hue` plus a four-step `tone`:
-
-```js
-g.box({ id: `tree:${row}:${col}`, x, y: 0, z, w: 0.9, h: 1, d: 0.9, hue: 'moss', tone: 'mid' })
-g.halo({ id: `tree:${row}:${col}`, x, z, size: 1.5 })
-g.follow(me.x, 0, me.z)
-g.hud({ topLeft: `lane ${me.gz}` })
-```
-
-Read `references/render-3d.md` before writing a 3D game — the id rule, the
-hue/tone split, and the lerp rule are the three things that go wrong otherwise.
-
-**The split that matters:** `init`/`onJoin`/`onLeave`/`step` run only on the host,
-so they must never touch the DOM. `draw` runs in every browser and must never
-change `state`. Violating this produces games that work for the host and glitch
-for everyone else — the single most common failure. `references/netcode.md`
-explains why.
-
-#### Smooth motion (do this; do not raise the tick rate)
-
-The sim stays at **30Hz**. Screens redraw at 60–120Hz. Motion looks smooth
-because named fields are interpolated — not because the host ticks faster. Do
-not edit `core/` or `TICK_HZ` to "make it smoother."
-
-- **Always name every moving position in `lerp`.** 3D ground is `x` and `z`;
-  include `y` if they hop or jump. 2D is `lerpKeys: ['x', 'y']`.
-- **Never lerp scores, coins, lives, "it", or any counter.** Those would render
-  as fractions mid-tick.
-- **Moving scenery** (cars, waves, patrols): put a `time` clock on state, lerp
-  it, and compute positions in `draw` from a **pure** function of
-  `(seed, id, time)`. Copy `examples/hop`. Do not send every moving mesh.
-- **Stable `id`s every frame** (`tree:12:3`, not an array index) or the pool
-  smears and looks like stutter.
-
-```js
-lerp: {
-  top: ['time'],             // clock that drives computed scenery
-  players: ['x', 'y', 'z'],  // 3D player pose
-}
-```
-
-Practical notes:
-
-- `input.touch` is `'swipe'` or `'stick'` when anyone will play on a phone
-  *and the game is about moving*. Swipe is one hop or step per flick; stick
-  is a little on-screen stick they hold to keep moving. Omit `touch` when
-  only computers will play, or when the game is taps on cards or people —
-  then set `pointer: true` and let thumbs hit the picture. Keyboard still
-  always works for movement games. The template maps swipe or stick onto the
-  same `up`/`down`/`left`/`right` booleans — `step` does not read a separate
-  touch object.
-- `inputs` is `{ playerId: {up, down, left, right, action, action2, px, py, pressed} }`,
-  carrying only the keys declared in `game.input.keys`.
-- `dt` is seconds since the last tick. Multiply all movement by it.
-- Draw in the fixed `view` coordinate space; it is scaled to fit any screen.
-- Keep `state` JSON-serializable — it crosses the network every tick. No
-  functions, no `Map`, no `Set`, no class instances.
-
-### 8. Check and hand over
+### 6. Check, then hand over
 
 ```sh
-node skills/playable/scripts/doctor.mjs <dir>
-cd <dir> && npm start
+node <skill-dir>/scripts/check-game.mjs <dir>
+node <skill-dir>/scripts/doctor.mjs <dir>
 ```
 
-Then give the user, in plain language:
+Read `references/done.md` and answer every line before you hand over a
+link. You have not seen the game in a browser. Say that, and ask them to
+try two windows. Do not give them an address until `check-game` exits 0.
+A starter title, a hop lane grid inside `race` / `tag` / `shot`, or
+`Math.random()` inside `step` is a failed game, not a finished one.
 
-- the address **they** open,
-- the link or code **their friends** open,
-- the fact that the game only runs while the terminal (local) or their tab (tab)
-  stays open.
-- **Create a room**, then the **settings icon** in the top-right: room ID,
-  invite link, QR code, and the line that says how the connection **feels**
-  (instant / fine / delayed / late). Friends open the link or scan the code.
-  That feel line is the delay to the host, not a score.
-
-Tell them to test with two browser windows side by side before inviting anyone.
-For a `local` project you can verify it yourself first, without a browser:
+For a `local` project you can also run, without a browser:
 
 ```sh
-node skills/playable/scripts/smoke-test.mjs <dir>
+node <skill-dir>/scripts/smoke-test.mjs <dir>
 ```
 
-### 9. Iterate
+Then, in plain language: the address **they** open, the link or code
+**their friends** open, and that the game runs only while the terminal
+(`local`) or their tab (`tab`) stays open. **Create a room**, then the
+**settings icon** in the top-right: room ID, invite link, QR code, and
+how the connection **feels**. Ask them to try two browser windows before
+inviting anyone.
 
-Change requests arrive as "make the red one faster", not as diffs. That is
-one programming pass on `game.js`, not a new grill and not a new crew. Tell
-them to reload — both players must, because the host is running the
-authoritative copy. Re-grill only if they changed what the game *is*.
+### 7. Iterate
 
-## Being honest about the limits
+"Make the red one faster" is one edit to `game.js`, then `check-game`
+again. Both players reload. Grill again only if they changed what the
+game *is* — including a request that belongs to a different shape. Do
+not morph `tag` into `hop` inside the same file. Scaffold the new shape.
 
-Do not promise more than this setup delivers. When it is relevant, say plainly:
+## Limits worth saying out loud
 
-- In `tab` mode a free third-party service introduces the players. On some
-  networks — many offices, some mobile data — a direct connection **cannot** be
-  made at all. The fallback is `local` mode.
-- In `local` mode, play beyond the same Wi-Fi needs a tunnel, which makes a port
-  on their computer reachable from the internet. **Explain that and get an
-  explicit yes before setting one up** — do not quietly open their machine to
-  the world.
-- Nobody can play while the host's terminal or tab is closed. There is no "the
-  game is always online" in this design, and that is the tradeoff for having no
-  server to pay for.
+- `tab` mode cannot connect on some office and mobile networks. The
+  fallback is `local`.
+- Play beyond the same Wi-Fi needs a tunnel. Explain that and get an
+  explicit yes before opening a port.
+- Nothing stays online after the host closes the terminal or tab.
+- Every client receives the whole state. Face-down is not a secret.
+- Fast twitch is mushy. Offer `shot` or a slower `tag` / `race`.
+- There is no sound. A request for sound is a template gap: stop and say
+  so. Do not add an audio library, a paid API, or sound bytes inside
+  `state`.
 
-`references/troubleshooting.md` covers what to do when a player cannot connect,
-the game feels laggy, or the port is busy.
+`references/troubleshooting.md` covers a failed join, a late connection,
+and a busy port.
+
+## Chrome you do not rebuild
+
+The templates already show a name, Create / Join, and a settings icon
+(room ID, invite link, QR, names, Traditional Chinese or English, optional
+card timers, Leave). Ground `#000000`, panels `#111111`, nested `#2A2A2A`.
+White pill, black type. Crimson `#C41E3A` is for data, never buttons.
+Steel `#2B5A8A` is the knower. System type only, so it works offline.
+2D games draw with `renderer/paper.js`. Do not restyle the lobby unless
+they asked, and do not copy another design skill into this repo.

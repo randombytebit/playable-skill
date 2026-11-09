@@ -68,3 +68,41 @@ export function outlineColor(hue) {
 export const BACKGROUND = hslToHex(206, 22, 90)
 export const HALO = hslToHex(HUES.ink.h, HUES.ink.s, HUES.ink.l)
 export const HUE_NAMES = Object.keys(HUES)
+
+// One key light. surface.js places the lamp here; projectHalo() casts along
+// the same ray. Do not give the shadow a second direction.
+export const KEY_LIGHT = { x: 6, y: 12, z: -4 }
+
+const LIGHT_LEN = Math.hypot(KEY_LIGHT.x, KEY_LIGHT.y, KEY_LIGHT.z)
+/** Ray direction: from the key light, across the ground, toward the origin. */
+export const LIGHT_RAY = {
+  x: -KEY_LIGHT.x / LIGHT_LEN,
+  y: -KEY_LIGHT.y / LIGHT_LEN,
+  z: -KEY_LIGHT.z / LIGHT_LEN,
+}
+
+// How far (in world units) the shadow has to travel before it is fully soft.
+// A contact blob stays sharp; a jumper a unit up is about halfway there.
+const PENUMBRA_DISTANCE = 1.4
+const HEIGHT_SAMPLE = 0.35
+const GROUND_BIAS = 0.012
+
+/**
+ * Soft shadow on the ground plane. Distance along the light ray widens and
+ * fades the blob — the penumbra relationship Shadertoy raymarchers use —
+ * without raymarching the scene. Omit y and h for a hard contact shadow.
+ */
+export function projectHalo({ x = 0, z = 0, y = 0, h = 0, size = 1 } = {}) {
+  const lift = Math.max(0, y) + Math.max(0, h) * HEIGHT_SAMPLE
+  const down = -LIGHT_RAY.y
+  const travel = down > 1e-6 ? lift / down : 0
+  const penumbra = clamp(travel / PENUMBRA_DISTANCE, 0, 1)
+  return {
+    x: x + LIGHT_RAY.x * travel,
+    y: GROUND_BIAS,
+    z: z + LIGHT_RAY.z * travel,
+    size: size * (1 + penumbra * 1.5),
+    penumbra,
+    opacity: 0.55 + (0.18 - 0.55) * penumbra,
+  }
+}
